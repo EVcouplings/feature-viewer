@@ -9,6 +9,8 @@ export default class extends Component {
     constructor(props){
         super(props);
         this.createChart = this.createChart.bind(this);
+        this.zoomed = this.zoomed.bind(this);
+        this.draw = this.draw.bind(this);
     }
 
     componentDidMount() {
@@ -16,7 +18,18 @@ export default class extends Component {
     }
 
     componentDidUpdate() {
-        this.createChart();
+        this.draw();
+    }
+
+    zoomed(){
+        // Propagate event
+        this.props.onZoom && this.props.onZoom();
+
+        if (event.sourceEvent && event.sourceEvent.type === "brush") return; // ignore zoom-by-brush
+        let t = event.transform;
+        this.x.domain(t.rescaleX(this.x2).domain());
+
+        this.draw();
     }
 
     createChart() {
@@ -31,30 +44,22 @@ export default class extends Component {
 
         let {width, height} = node.getBoundingClientRect();
 
-        let x = scaleLinear()
+        this.x = scaleLinear()
             .domain([offset.start, offset.end])
             .range([0, width]);
 
-        let x2 = x.copy();
-
-        let zoomed = () => {
-            if (event.sourceEvent && event.sourceEvent.type === "brush") return; // ignore zoom-by-brush
-            let t = event.transform;
-            x.domain(t.rescaleX(x2).domain());
-
-            draw();
-        };
+        this.x2 = this.x.copy();
 
         let zoomE = zoom()
             .scaleExtent([1, Infinity])
-            .translateExtent([[0, 0], [width, height]])
-            .extent([[0, 0], [width, height]])
-            .on("zoom", zoomed);
+            .translateExtent([[0, 0], [width, 0]])
+            .extent([[0, 0], [width, 0]])
+            .on("zoom", this.props.zoomed || this.zoomed);
 
         select(node)
             .attr("class", "seqGroup");
 
-        let g = select(node)
+        this.g = select(node)
             .append("g")
             .attr("class", "AAGroup");
 
@@ -67,31 +72,28 @@ export default class extends Component {
             .attr("height", height)
             .call(zoomE);
 
+        this.draw();
+    }
 
+    draw(){
+        let sequence = this.props.sequence;
+        let {width, height} = this.node.getBoundingClientRect();
 
-        let draw = () => {
-            g
-                .selectAll('.AA')
-                .remove();
+        this.g
+            .selectAll('.AA')
+            .remove();
 
-            g
-                .selectAll(".AA")
-                .data(sequence)
-                .enter()
-                .append("text")
-                .attr("class", "AA")
-                .attr("x", function (d, i) {
-                    return x.range([0, width])(i)
-                })
-                .attr("y", "1em")
-                .attr("font-size", "1em")
-                .attr("font-family", "monospace")
-                .text(function (d) {
-                    return d
-                });
-        };
-
-        draw();
+        this.g
+            .selectAll(".AA")
+            .data(sequence)
+            .enter()
+            .append("text")
+            .attr("class", "AA")
+            .attr("x", (_, i) => this.x.range([0, width])(i))
+            .attr("y", ".7em")
+            .attr("font-size", height)
+            .attr("font-family", "monospace")
+            .text((letter) => letter);
     }
 
     render() {
