@@ -334,9 +334,6 @@ var FeatureViewer = (function () {
             }
             return (scaling(d.y) - scaling(d.x));
         };
-        var uniqueWidth = function (d) {
-            return (scaling(1));
-        };
 
         this.onFeatureSelected = function (listener) {
             svgElement.addEventListener(self.events.FEATURE_SELECTED_EVENT, listener);

@@ -1,5 +1,6 @@
 import React, {Component} from 'react'
 import {render} from 'react-dom'
+import './style.css';
 
 import Example from '../../src'
 
@@ -12,4 +13,4 @@ class Demo extends Component {
   }
 }
 
-render(<Demo/>, document.querySelector('#demo'))
+render(<Demo/>, document.querySelector('#demo'));
