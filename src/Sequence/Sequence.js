@@ -53,14 +53,14 @@ export default class extends Component {
     createChart() {
         const node = this.node;
 
+        let {width, height} = node.getBoundingClientRect();
         let sequence = this.props.sequence;
+
 
         let offset = this.props.offset || {
             start: 0,
             end: sequence.length || 1
         };
-
-        let {width, height} = node.getBoundingClientRect();
 
         this.x = scaleLinear()
             .domain([offset.start, offset.end])
@@ -79,7 +79,9 @@ export default class extends Component {
 
         this.g = select(node)
             .append("g")
-            .attr("class", "AAGroup");
+            .attr("class", "AAGroup")
+            .attr("width", width)
+            .attr("height", height);
 
         select(node)
             .append("rect")
@@ -108,8 +110,8 @@ export default class extends Component {
             .append("text")
             .attr("class", "AA")
             .attr("x", (_, i) => this.x.range([0, width])(i))
-            .attr("y", ".7em")
-            .attr("font-size", height)
+            .attr("y", "1em")
+            .attr("font-size", "1em")
             .attr("font-family", "monospace")
             .text((letter) => letter);
     }
