@@ -17,17 +17,35 @@ export default class extends Component {
         this.createChart();
     }
 
+    shouldComponentUpdate(nextProps){
+        if (nextProps.translate != this.props.translate){
+            this.zoomed(nextProps.translate);
+            return false;
+        } else {
+            return true;
+        }
+    }
+
     componentDidUpdate() {
         this.draw();
     }
 
-    zoomed(){
-        // Propagate event
-        this.props.onZoom && this.props.onZoom();
+    zoomed(t){
+        if(t !== undefined){
+            this.x.domain(t.rescaleX(this.x2).domain());
+        } else if(this.props.onZoom !== undefined) {
+            if (event.sourceEvent && event.sourceEvent.type === "brush") return; // ignore zoom-by-brush
 
-        if (event.sourceEvent && event.sourceEvent.type === "brush") return; // ignore zoom-by-brush
-        let t = event.transform;
-        this.x.domain(t.rescaleX(this.x2).domain());
+            let t = event.transform;
+            this.props.onZoom(t);
+        } else {
+            if (event.sourceEvent && event.sourceEvent.type === "brush") return; // ignore zoom-by-brush
+
+            let t = event.transform;
+
+            // Propagate event
+            this.x.domain(t.rescaleX(this.x2).domain());
+        }
 
         this.draw();
     }
@@ -54,7 +72,7 @@ export default class extends Component {
             .scaleExtent([1, Infinity])
             .translateExtent([[0, 0], [width, 0]])
             .extent([[0, 0], [width, 0]])
-            .on("zoom", this.props.zoomed || this.zoomed);
+            .on("zoom", this.zoomed);
 
         select(node)
             .attr("class", "seqGroup");
