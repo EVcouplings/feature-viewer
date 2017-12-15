@@ -54,6 +54,10 @@ export default class extends Component {
         select(node)
             .attr("class", "seqGroup");
 
+        let g = select(node)
+            .append("g")
+            .attr("class", "AAGroup");
+
         select(node)
             .append("rect")
             .attr("class", "zoom")
@@ -63,12 +67,14 @@ export default class extends Component {
             .attr("height", height)
             .call(zoomE);
 
+
+
         let draw = () => {
-            select(node)
+            g
                 .selectAll('.AA')
                 .remove();
 
-            select(node)
+            g
                 .selectAll(".AA")
                 .data(sequence)
                 .enter()
