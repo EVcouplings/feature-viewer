@@ -1,15 +1,13 @@
 import React, {Component} from 'react'
 
 import { scaleLinear } from 'd3-scale';
-import { max } from 'd3-array';
-import { select } from 'd3-selection';
-import { line } from 'd3-shape';
+import { select, event } from 'd3-selection';
+import { zoom } from 'd3-zoom';
 
 export default class extends Component {
 
     constructor(props){
         super(props);
-        this.createBarChart = this.createBarChart.bind(this);
         this.createChart = this.createChart.bind(this);
     }
 
@@ -26,7 +24,7 @@ export default class extends Component {
 
         let sequence = this.props.sequence;
 
-        let offset = {
+        let offset = this.props.offset || {
             start: 0,
             end: sequence.length || 1
         };
@@ -37,33 +35,62 @@ export default class extends Component {
             .domain([offset.start, offset.end])
             .range([0, width]);
 
+        let x2 = x.copy();
+
+        let zoomed = () => {
+            if (event.sourceEvent && event.sourceEvent.type === "brush") return; // ignore zoom-by-brush
+            let t = event.transform;
+            x.domain(t.rescaleX(x2).domain());
+
+            draw();
+        };
+
+        let zoomE = zoom()
+            .scaleExtent([1, Infinity])
+            .translateExtent([[0, 0], [width, height]])
+            .extent([[0, 0], [width, height]])
+            .on("zoom", zoomed);
+
         select(node)
             .attr("class", "seqGroup");
 
         select(node)
-            .selectAll('.AA')
-            .remove();
+            .append("rect")
+            .attr("class", "zoom")
+            .style("fill", "none")
+            .style("pointer-events", "all")
+            .attr("width", width)
+            .attr("height", height)
+            .call(zoomE);
 
-        select(node)
-            .selectAll(".AA")
-            .data(sequence)
-            .enter()
-            .append("text")
-            .attr("class", "AA")
-            .attr("x", function (d, i) {
-                return x.range([0, width])(i)
-            })
-            .attr("y", "1em")
-            .attr("font-size", "1em")
-            .attr("font-family", "monospace")
-            .text(function (d, i) {
-                return d
-            });
+        let draw = () => {
+            select(node)
+                .selectAll('.AA')
+                .remove();
+
+            select(node)
+                .selectAll(".AA")
+                .data(sequence)
+                .enter()
+                .append("text")
+                .attr("class", "AA")
+                .attr("x", function (d, i) {
+                    return x.range([0, width])(i)
+                })
+                .attr("y", "1em")
+                .attr("font-size", "1em")
+                .attr("font-family", "monospace")
+                .text(function (d) {
+                    return d
+                });
+        };
+
+        draw();
     }
 
     render() {
         return <svg
-            style={this.props.style}
+            style={{height:"1em", ...this.props.style}}
             className={this.props.className}
             ref={node => this.node = node}
         />
