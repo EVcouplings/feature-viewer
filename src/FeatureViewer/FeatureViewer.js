@@ -1315,13 +1315,6 @@ export default class extends Component {
                 //resetAll();
             }
         }
-//
-        let resizeCallback = function(){
-
-            updateWindow();
-        }
-
-        $(window).on("resize", resizeCallback);
 
         function updateWindow(){
 //            let new_width = $(div).width() - margin.left - margin.right - 17;
@@ -1830,7 +1823,6 @@ export default class extends Component {
         }
 
         this.clearInstance = function (){
-            $(window).off("resize", resizeCallback);
             svg = null;
             svgElement = null;
             svgContainer = null;
