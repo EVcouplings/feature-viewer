@@ -4,8 +4,10 @@ import { scaleLinear } from 'd3-scale';
 import { select, event } from 'd3-selection';
 import { zoom } from 'd3-zoom';
 import { line as d3Line } from 'd3-shape';
-import { axisBottom } from 'd3-axis';
-import { scaleOrdinal } from 'd3-scale';
+import { axisBottom, axisLeft } from 'd3-axis';
+import { scaleOrdinal, scaleBand } from 'd3-scale';
+import { format as d3Format } from 'd3-format';
+import { brushX as d3Brush } from 'd3-brush';
 
 export default class extends Component {
 
@@ -458,7 +460,7 @@ export default class extends Component {
         //Create Axis
         let xAxis = axisBottom()
             .scale(scaling)
-            .tickFormat(d3.format("d"));
+            .tickFormat(d3Format("d"));
 
         // function shadeBlendConvert(p, from, to) {
         //     if(typeof(p)!="number"||p<-1||p>1||typeof(from)!="string"||(from[0]!='r'&&from[0]!='#')||(typeof(to)!="string"&&typeof(to)!="undefined"))return null; //ErrorCheck
@@ -497,16 +499,15 @@ export default class extends Component {
             svg.select("clippath rect").attr("height", position + 60 + "px");
         }
 
-        let yAxisScale = scaleOrdinal()
+        let yAxisScale = scaleBand()
             .domain([0, yData.length])
-            .rangeRoundBands([0, 500], .1);
-        let yAxis = d3.svg.axis()
+            .rangeRound([0, 500], .1);
+        let yAxis = axisLeft()
             .scale(yAxisScale)
             .tickValues(yData) //specify an array here for values
             .tickFormat(function (d) {
                 return d
-            })
-            .orient("left");
+            });
 
         function addYAxis() {
             yAxisSVG = svg.append("g")
@@ -1216,10 +1217,9 @@ export default class extends Component {
             }
         };
 
-        let brush = d3.svg.brush()
-            .x(scaling)
+        let brush = d3Brush(scaling)
             //.on("brush", brushmove)
-            .on("brushend", brushend);
+            .on("end", brushend);
 
         function addBrush() {
             svgContainer.append("g")
@@ -1236,10 +1236,10 @@ export default class extends Component {
             }
             brush.extent([start,end]);
             brushend();
-        }
+        };
         this.resetZoom = function(start, end){
             resetAll();
-        }
+        };
 
         function brushend() {
             select(div).selectAll('div.selectedRect').remove();
