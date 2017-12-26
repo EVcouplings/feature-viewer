@@ -1511,11 +1511,6 @@ export default class extends Component {
                 }
             }
 
-            if (!$.fn.popover) {
-                options.bubbleHelp = false;
-                console.warn("The bubble help requires tooltip and popover bootstrap js libraries. The feature viewer will continue to work, but without the info bubble");
-            }
-
             // Create SVG
             if (options.zoomMax) {
                 zoomMax = options.zoomMax;
