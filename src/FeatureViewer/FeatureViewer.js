@@ -1316,6 +1316,7 @@ export default class extends Component {
             }
         }
 
+        // TODO: This function get's called when resizing the window (was previously in doc.window.on(resize, f)
         function updateWindow(){
 //            let new_width = $(div).width() - margin.left - margin.right - 17;
 //            let width_larger = (width < new_width);
