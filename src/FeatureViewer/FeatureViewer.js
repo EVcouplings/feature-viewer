@@ -3,6 +3,9 @@ import React, {Component} from 'react'
 import { scaleLinear } from 'd3-scale';
 import { select, event } from 'd3-selection';
 import { zoom } from 'd3-zoom';
+import { line as d3Line } from 'd3-shape';
+import { axisBottom } from 'd3-axis';
+import { scaleOrdinal } from 'd3-scale';
 
 export default class extends Component {
 
@@ -24,6 +27,9 @@ export default class extends Component {
     createChart() {
 
         let self = this;
+        let sequence = this.props.sequence;
+        let options = this.props.options || {};
+
         this.events = {
             FEATURE_SELECTED_EVENT: "feature-viewer-position-selected",
             FEATURE_DESELECTED_EVENT: "feature-viewer-position-deselected",
@@ -31,9 +37,10 @@ export default class extends Component {
         };
 
         let div = this.node;
-        let el = document.getElementById(div.substring(1));
+        let {width, height} = this.node.getBoundingClientRect();
+        let el = div;
         let svgElement;
-        let sequence = sequence;
+
         let intLength = Number.isInteger(sequence) ? sequence : null;
         let fvLength = intLength | sequence.length;
         let features = [];
@@ -66,16 +73,16 @@ export default class extends Component {
             length : offset.end - offset.start,
             start : offset.start,
             end : offset.end
-        }
+        };
         let featureSelected = {};
         let animation = true;
 
         function colorSelectedFeat(feat, object) {
             //change color && memorize
-            if (featureSelected !== {}) d3.select(featureSelected.id).style("fill", featureSelected.originalColor);
+            if (featureSelected !== {}) select(featureSelected.id).style("fill", featureSelected.originalColor);
             if (object.type !== "path" && object.type !== "line"){
-                featureSelected = {"id": feat, "originalColor": d3.select(feat).style("fill") || object.color};
-                d3.select(feat).style("fill", "orangered");
+                featureSelected = {"id": feat, "originalColor": select(feat).style("fill") || object.color};
+                select(feat).style("fill", "orangered");
             }
         }
 
@@ -84,23 +91,23 @@ export default class extends Component {
          */
 
         //Init box & scaling
-        d3.select(div)
+        select(div)
             .style("position", "relative")
             .style("padding", "0px")
             .style("z-index", "2");
 
         let margin = {
-                top: 10,
-                right: 20,
-                bottom: 20,
-                left: 110
-            },
-            width = $(div).width() - margin.left - margin.right - 17,
-            height = 600 - margin.top - margin.bottom;
-        let scaling = d3.scale.linear()
+            top: 10,
+            right: 20,
+            bottom: 20,
+            left: 110
+        };
+        width = width - margin.left - margin.right - 17;
+        height = 600 - margin.top - margin.bottom;
+        let scaling = scaleLinear()
             .domain([offset.start, offset.end])
             .range([5, width-5]);
-        let scalingPosition = d3.scale.linear()
+        let scalingPosition = scaleLinear()
             .domain([0, width])
             .range([offset.start, offset.end]);
 
@@ -122,28 +129,28 @@ export default class extends Component {
             return elemHover;
         }
 
-        d3.helper = {};
+        let helper = {};
 
-        d3.helper.tooltip = function (object) {
+        helper.tooltip = function (object) {
             let tooltipDiv;
             let selectedRect;
-            let bodyNode = d3.select(div).node();
+            let bodyNode = select(div).node();
             let tooltipColor = options.tooltipColor ? options.tooltipColor : "orangered";
 
             function tooltip(selection) {
 
                 selection.on('mouseover.tooltip', function (pD, pI) {
                     // Clean up lost tooltips
-                    d3.select('body').selectAll('div.tooltip').remove();
+                    select('body').selectAll('div.tooltip').remove();
                     // Append tooltip
                     let absoluteMousePos = d3.mouse(bodyNode);
                     let rightside = (absoluteMousePos[0] > width);
                     if (rightside) {
-                        tooltipDiv = d3.select(div)
+                        tooltipDiv = select(div)
                             .append('div')
                             .attr('class', 'tooltip3');
                     } else {
-                        tooltipDiv = d3.select(div)
+                        tooltipDiv = select(div)
                             .append('div')
                             .attr('class', 'tooltip2');
                         tooltipDiv.style({
@@ -166,8 +173,8 @@ export default class extends Component {
                     });
                     if (object.type === "path") {
                         let first_line = '<p style="margin:2px;font-weight:700;color:' + tooltipColor +'">' + pD[0].x + '&#x256d;&#x256e;' + pD[1].x + '</p>';
-                        if (pD.description) let second_line = '<p style="margin:2px;color:' + tooltipColor +';font-size:9px">' + pD.description + '</p>';
-                        else let second_line = '';
+                        let second_line = ''
+                        if (pD.description) second_line = '<p style="margin:2px;color:' + tooltipColor +';font-size:9px">' + pD.description + '</p>';
                     } else if (object.type === "line") {
                         let elemHover = updateLineTooltip(absoluteMousePos[0],pD);
                         if (elemHover.description) {
@@ -180,12 +187,12 @@ export default class extends Component {
                         }
                     } else if (object.type === "unique" || pD.x === pD.y) {
                         let first_line = '<p style="margin:2px;font-weight:700;color:' + tooltipColor +'">' + pD.x + '</p>';
-                        if (pD.description) let second_line = '<p style="margin:2px;color:' + tooltipColor +';font-size:9px">' + pD.description + '</p>';
-                        else let second_line = '';
+                        let second_line = '';
+                        if (pD.description) second_line = '<p style="margin:2px;color:' + tooltipColor +';font-size:9px">' + pD.description + '</p>';
                     } else {
                         let first_line = '<p style="margin:2px;font-weight:700;color:' + tooltipColor +'">' + pD.x + ' - ' + pD.y + '</p>';
-                        if (pD.description) let second_line = '<p style="margin:2px;color:' + tooltipColor +';font-size:9px">' + pD.description + '</p>';
-                        else let second_line = '';
+                        let second_line = '';
+                        if (pD.description) second_line = '<p style="margin:2px;color:' + tooltipColor +';font-size:9px">' + pD.description + '</p>';
                     }
 
                     tooltipDiv.html(first_line + second_line);
@@ -248,10 +255,10 @@ export default class extends Component {
                         }
                         else colorSelectedFeat(this, object);
 
-                        let svgWidth = SVGOptions.brushActive ? d3.select(".background").attr("width") : svgContainer.node().getBBox().width;
-                        d3.select('body').selectAll('div.selectedRect').remove();
+                        let svgWidth = SVGOptions.brushActive ? select(".background").attr("width") : svgContainer.node().getBBox().width;
+                        select('body').selectAll('div.selectedRect').remove();
                         // Append tooltip
-                        selectedRect = d3.select(div)
+                        selectedRect = select(div)
                             .append('div')
                             .attr('class', 'selectedRect');
                         if (object.type === "path") {
@@ -419,15 +426,15 @@ export default class extends Component {
             return leveling.length;
         }
 
-        let lineBond = d3.svg.line()
-            .interpolate("step-before")
+        let lineBond = d3Line()
+            .curve("step-before")
             .x(function (d) {
                 return scaling(d.x);
             })
             .y(function (d) {
                 return -d.y * 10 + pathLevel;
             });
-        let lineGen = d3.svg.line()
+        let lineGen = d3Line()
 
         //          .interpolate("cardinal")
             .x(function(d) {
@@ -436,11 +443,11 @@ export default class extends Component {
             .y(function (d) {
                 return lineYscale(-d.y) * 10 + pathLevel;
             });
-        let lineYscale = d3.scale.linear()
+        let lineYscale = scaleLinear()
             .domain([0,-30])
             .range([0,-20]);
-        let line = d3.svg.line()
-            .interpolate("linear")
+        let line = d3Line()
+            .curve("linear")
             .x(function (d) {
                 return scaling(d.x);
             })
@@ -449,30 +456,29 @@ export default class extends Component {
             });
 
         //Create Axis
-        let xAxis = d3.svg.axis()
+        let xAxis = axisBottom()
             .scale(scaling)
-            .tickFormat(d3.format("d"))
-            .orient("bottom");
+            .tickFormat(d3.format("d"));
 
-        function shadeBlendConvert(p, from, to) {
-            if(typeof(p)!="number"||p<-1||p>1||typeof(from)!="string"||(from[0]!='r'&&from[0]!='#')||(typeof(to)!="string"&&typeof(to)!="undefined"))return null; //ErrorCheck
-            if(!this.sbcRip)this.sbcRip=function(d){
-                let l=d.length,RGB=new Object();
-                if(l>9){
-                    d=d.split(",");
-                    if(d.length<3||d.length>4)return null;//ErrorCheck
-                    RGB[0]=i(d[0].slice(4)),RGB[1]=i(d[1]),RGB[2]=i(d[2]),RGB[3]=d[3]?parseFloat(d[3]):-1;
-                }else{
-                    if(l==8||l==6||l<4)return null; //ErrorCheck
-                    if(l<6)d="#"+d[1]+d[1]+d[2]+d[2]+d[3]+d[3]+(l>4?d[4]+""+d[4]:""); //3 digit
-                    d=i(d.slice(1),16),RGB[0]=d>>16&255,RGB[1]=d>>8&255,RGB[2]=d&255,RGB[3]=l==9||l==5?r(((d>>24&255)/255)*10000)/10000:-1;
-                }
-                return RGB;}
-            let i=parseInt,r=Math.round,h=from.length>9,h=typeof(to)=="string"?to.length>9?true:to=="c"?!h:false:h,b=p<0,p=b?p*-1:p,to=to&&to!="c"?to:b?"#000000":"#FFFFFF",f=sbcRip(from),t=sbcRip(to);
-            if(!f||!t)return null; //ErrorCheck
-            if(h)return "rgb("+r((t[0]-f[0])*p+f[0])+","+r((t[1]-f[1])*p+f[1])+","+r((t[2]-f[2])*p+f[2])+(f[3]<0&&t[3]<0?")":","+(f[3]>-1&&t[3]>-1?r(((t[3]-f[3])*p+f[3])*10000)/10000:t[3]<0?f[3]:t[3])+")");
-            else return "#"+(0x100000000+(f[3]>-1&&t[3]>-1?r(((t[3]-f[3])*p+f[3])*255):t[3]>-1?r(t[3]*255):f[3]>-1?r(f[3]*255):255)*0x1000000+r((t[0]-f[0])*p+f[0])*0x10000+r((t[1]-f[1])*p+f[1])*0x100+r((t[2]-f[2])*p+f[2])).toString(16).slice(f[3]>-1||t[3]>-1?1:3);
-        }
+        // function shadeBlendConvert(p, from, to) {
+        //     if(typeof(p)!="number"||p<-1||p>1||typeof(from)!="string"||(from[0]!='r'&&from[0]!='#')||(typeof(to)!="string"&&typeof(to)!="undefined"))return null; //ErrorCheck
+        //     if(!this.sbcRip)this.sbcRip=function(d){
+        //         let l=d.length,RGB=new Object();
+        //         if(l>9){
+        //             d=d.split(",");
+        //             if(d.length<3||d.length>4)return null;//ErrorCheck
+        //             RGB[0]=i(d[0].slice(4)),RGB[1]=i(d[1]),RGB[2]=i(d[2]),RGB[3]=d[3]?parseFloat(d[3]):-1;
+        //         }else{
+        //             if(l==8||l==6||l<4)return null; //ErrorCheck
+        //             if(l<6)d="#"+d[1]+d[1]+d[2]+d[2]+d[3]+d[3]+(l>4?d[4]+""+d[4]:""); //3 digit
+        //             d=i(d.slice(1),16),RGB[0]=d>>16&255,RGB[1]=d>>8&255,RGB[2]=d&255,RGB[3]=l==9||l==5?r(((d>>24&255)/255)*10000)/10000:-1;
+        //         }
+        //         return RGB;}
+        //     let i=parseInt,r=Math.round,h=from.length>9,h=typeof(to)=="string"?to.length>9?true:to=="c"?!h:false:h,b=p<0,p=b?p*-1:p,to=to&&to!="c"?to:b?"#000000":"#FFFFFF",f=sbcRip(from),t=sbcRip(to);
+        //     if(!f||!t)return null; //ErrorCheck
+        //     if(h)return "rgb("+r((t[0]-f[0])*p+f[0])+","+r((t[1]-f[1])*p+f[1])+","+r((t[2]-f[2])*p+f[2])+(f[3]<0&&t[3]<0?")":","+(f[3]>-1&&t[3]>-1?r(((t[3]-f[3])*p+f[3])*10000)/10000:t[3]<0?f[3]:t[3])+")");
+        //     else return "#"+(0x100000000+(f[3]>-1&&t[3]>-1?r(((t[3]-f[3])*p+f[3])*255):t[3]>-1?r(t[3]*255):f[3]>-1?r(f[3]*255):255)*0x1000000+r((t[0]-f[0])*p+f[0])*0x10000+r((t[1]-f[1])*p+f[1])*0x100+r((t[2]-f[2])*p+f[2])).toString(16).slice(f[3]>-1||t[3]>-1?1:3);
+        // }
 
         function addXAxis(position) {
             svgContainer.append("g")
@@ -491,7 +497,7 @@ export default class extends Component {
             svg.select("clippath rect").attr("height", position + 60 + "px");
         }
 
-        let yAxisScale = d3.scale.ordinal()
+        let yAxisScale = scaleOrdinal()
             .domain([0, yData.length])
             .rangeRoundBands([0, 500], .1);
         let yAxis = d3.svg.axis()
@@ -693,7 +699,7 @@ export default class extends Component {
             },
             sequence: function (seq, position, start) {
                 //Create group of sequence
-                if (!start) let start = 0;
+                start = start || 0;
                 svgContainer.append("g")
                     .attr("class", "seqGroup")
                     .selectAll(".AA")
@@ -794,7 +800,7 @@ export default class extends Component {
                     .attr("height", rectHeight)
                     .style("fill", function(d) { return d.color || object.color })
                     .style("z-index", "13")
-                    .call(d3.helper.tooltip(object));
+                    .call(helper.tooltip(object));
 
                 rectsProGroup
                     .append("text")
@@ -814,7 +820,7 @@ export default class extends Component {
                             return (scaling(d.y) - scaling(d.x)) > d.description.length * 8 && rectHeight > 11 ? "visible" : "hidden";
                         } else return "hidden";
                     })
-                    .call(d3.helper.tooltip(object));
+                    .call(helper.tooltip(object));
 
 
                 //rectsPro.selectAll("." + object.className)
@@ -829,7 +835,7 @@ export default class extends Component {
                 //    .attr("height", 12)
                 //    .style("fill", object.color)
                 //    .style("z-index", "13")
-                //    .call(d3.helper.tooltip(object));
+                //    .call(helper.tooltip(object));
 
                 forcePropagation(rectsProGroup);
                 let uniqueShift = rectHeight > 12 ? rectHeight - 6 : 0;
@@ -879,7 +885,7 @@ export default class extends Component {
                     .attr("height", 12)
                     .style("fill", function(d) {return d.color ||  object.color})
                     .style("z-index", "3")
-                    .call(d3.helper.tooltip(object));
+                    .call(helper.tooltip(object));
 
                 forcePropagation(rectsPro);
             },
@@ -922,7 +928,7 @@ export default class extends Component {
                     .style("stroke", function(d) {return d[0].color || object.color})
                     .style("z-index", "3")
                     .style("stroke-width", "2px")
-                    .call(d3.helper.tooltip(object));
+                    .call(helper.tooltip(object));
 
                 forcePropagation(pathsDB);
             },
@@ -960,12 +966,11 @@ export default class extends Component {
                         .attr("clip-path", "url(#clip)")
                         .attr("class", "element " + object.className + " " + object.className + i)
                         .attr("d", lineGen.interpolate(object.interpolation))
-                        .style("fill", object.fill ? shadeBlendConvert(0.6, object.color[i]) || shadeBlendConvert(0.6, "#000") : "none")
+                        // .style("fill", object.fill ? shadeBlendConvert(0.6, object.color[i]) || shadeBlendConvert(0.6, "#000") : "none")
                         .style("stroke", object.color[i] || "#000")
                         .style("z-index", "3")
                         .style("stroke-width", "2px")
-                        //                    .style("shape-rendering", "crispEdges")
-                        .call(d3.helper.tooltip(object));
+                        .call(helper.tooltip(object));
                 })
 
                 forcePropagation(histog);
@@ -1011,7 +1016,7 @@ export default class extends Component {
                     .attr("height", rectHeight)
                     .style("fill", function(d) { return d.color || object.color })
                     .style("z-index", "13")
-                    .call(d3.helper.tooltip(object));
+                    .call(helper.tooltip(object));
 
                 forcePropagation(rects);
             }
@@ -1237,9 +1242,9 @@ export default class extends Component {
         }
 
         function brushend() {
-            d3.select(div).selectAll('div.selectedRect').remove();
+            select(div).selectAll('div.selectedRect').remove();
             if (Object.keys(featureSelected).length !== 0 && featureSelected.constructor === Object) {
-                d3.select(featureSelected.id).style("fill", featureSelected.originalColor);
+                select(featureSelected.id).style("fill", featureSelected.originalColor);
                 featureSelected = {};
                 if (CustomEvent) {
                     let event = new CustomEvent(self.events.FEATURE_DESELECTED_EVENT, {
@@ -1255,10 +1260,13 @@ export default class extends Component {
             let extent = brush.extent();
             let extentLength = Math.abs(extent[0] - extent[1]);
 
-            if (extent[0] < extent[1]) let start = parseInt(extent[0] - 1),
+            let start = parseInt(extent[1] + 1);
+            let end = parseInt(extent[0] - 1);
+
+            if (extent[0] < extent[1]){
+                start = parseInt(extent[0] - 1);
                 end = parseInt(extent[1] + 1);
-            else let start = parseInt(extent[1] + 1),
-                end = parseInt(extent[0] - 1);
+            }
 
             let seq = displaySequence(extentLength);
             if (!brush.empty() && extentLength > zoomMax) {
@@ -1301,9 +1309,9 @@ export default class extends Component {
                 });
 
                 //rectsPep2.classed("selected", false);
-                d3.select(div).selectAll(".brush").call(brush.clear());
+                select(div).selectAll(".brush").call(brush.clear());
             } else {
-                d3.select(div).selectAll(".brush").call(brush.clear());
+                select(div).selectAll(".brush").call(brush.clear());
                 //resetAll();
             }
         }
@@ -1320,13 +1328,13 @@ export default class extends Component {
 //            let width_larger = (width < new_width);
 
             width = $(div).width() - margin.left - margin.right - 17;
-            d3.select(div+" svg")
+            select(div+" svg")
                 .attr("width", width + margin.left + margin.right);
-            d3.select(div+" #clip>rect").attr("width", width);
+            select(div+" #clip>rect").attr("width", width);
             if (SVGOptions.brushActive) {
-                d3.select(div+" .background").attr("width", width);
+                select(div+" .background").attr("width", width);
             }
-            d3.select(div).selectAll(".brush").call(brush.clear());
+            select(div).selectAll(".brush").call(brush.clear());
 
 //            let currentSeqLength = svgContainer.selectAll(".AA").size();
             let seq = displaySequence(current_extend.length);
@@ -1392,7 +1400,7 @@ export default class extends Component {
                 zoom: 1
             });
 
-            d3.select(div).selectAll(".brush").call(brush.clear());
+            select(div).selectAll(".brush").call(brush.clear());
         }
 
         function transition_data(features, start) {
@@ -1422,7 +1430,7 @@ export default class extends Component {
         }
 
         function addVerticalLine() {
-            let vertical = d3.select(".chart")
+            let vertical = select(".chart")
                 .append("div")
                 .attr("class", "Vline")
                 .style("position", "absolute")
@@ -1433,7 +1441,7 @@ export default class extends Component {
                 // .style("left", "0px")
                 .style("background", "#000");
 
-            d3.select(".chart")
+            select(".chart")
                 .on("mousemove.Vline", function () {
                     mousex = d3.mouse(this)[0] - 2;
                     vertical.style("left", mousex + "px")
@@ -1445,20 +1453,20 @@ export default class extends Component {
         }
 
         this.addRectSelection = function (svgId) {
-            let featSelection = d3.select(svgId);
+            let featSelection = select(svgId);
             let elemSelected = featSelection.data();
             let xTemp;
             let yTemp;
             let xRect;
             let widthRect;
-            let svgWidth = SVGOptions.brushActive ? d3.select(".background").attr("width") : svgContainer.node().getBBox().width;
-            d3.select('body').selectAll('div.selectedRect').remove();
+            let svgWidth = SVGOptions.brushActive ? select(".background").attr("width") : svgContainer.node().getBBox().width;
+            select('body').selectAll('div.selectedRect').remove();
 
             let objectSelected = {type:featSelection[0][0].tagName, color:featSelection.style("fill")};
             colorSelectedFeat(svgId, objectSelected);
 
             // Append tooltip
-            let selectedRect = d3.select(div)
+            let selectedRect = select(div)
                 .append('div')
                 .attr('class', 'selectedRect');
 
@@ -1527,7 +1535,7 @@ export default class extends Component {
 
             if (options.toolbar === true) {
 
-                let headerOptions = $(div + " .svgHeader").length ? d3.select(div + " .svgHeader") : d3.select(div).append("div").attr("class", "svgHeader");
+                let headerOptions = $(div + " .svgHeader").length ? select(div + " .svgHeader") : select(div).append("div").attr("class", "svgHeader");
 
 //                if (options.toolbarTemplate && options.toolbarTemplate === 2) {
 
@@ -1654,7 +1662,7 @@ export default class extends Component {
 //                            .text("0");
 //                    }
 //                }
-                let headerZoom = $(div + ' .header-zoom').length ? d3.select(div + ' .header-zoom') : headerOptions;
+                let headerZoom = $(div + ' .header-zoom').length ? select(div + ' .header-zoom') : headerOptions;
                 if (options.bubbleHelp === true) {
                     if (!$(div + ' .header-help').length) {
                         let helpContent = "<div><strong>To zoom in :</strong> Left click to select area of interest</div>" +
@@ -1709,7 +1717,7 @@ export default class extends Component {
                 }
             }
 
-            svg = d3.select(div).append("svg")
+            svg = select(div).append("svg")
                 .attr("width", width + margin.left + margin.right)
                 .attr("height", height + margin.top + margin.bottom)
                 .style("z-index", "2")
@@ -1756,7 +1764,7 @@ export default class extends Component {
                 .attr("in", "SourceGraphic");
 
             svgContainer.on('mousemove', function () {
-                let absoluteMousePos = SVGOptions.brushActive ? d3.mouse(d3.select(".background").node()) : d3.mouse(svgContainer.node());;
+                let absoluteMousePos = SVGOptions.brushActive ? d3.mouse(select(".background").node()) : d3.mouse(svgContainer.node());;
                 let pos = Math.round(scalingPosition(absoluteMousePos[0]));
                 if (!options.positionWithoutLetter) {
                     pos += sequence[pos-1] || "";
@@ -1817,7 +1825,7 @@ export default class extends Component {
                     .attr('height', Yposition + 50);
             }
             if (SVGOptions.verticalLine) d3.selectAll(".Vline").style("height", (Yposition + 50) + "px");
-            if (d3.selectAll(".element")[0].length > 1500) animation = false;
+            if (selectAll(".element")[0].length > 1500) animation = false;
 
         }
 
@@ -1830,7 +1838,7 @@ export default class extends Component {
             yAxisSVG = null;
             features = null;
             sbcRip = null;
-            d3.helper = {};
+            helper = {};
         }
 
     }

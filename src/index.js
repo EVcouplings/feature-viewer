@@ -1,5 +1,6 @@
 import React, {Component} from 'react'
 import Sequence from './Sequence/Sequence';
+import FeatureViewer from './FeatureViewer/FeatureViewer';
 
 export default class extends Component {
     state = {
@@ -33,6 +34,9 @@ export default class extends Component {
             <br />
             <Sequence style={{width:"200px"}}
                       onZoom={(t) => this.setState({updateT: t})}
+                      sequence={sequence} />
+
+            <FeatureViewer
                       sequence={sequence} />
 
         </div>
