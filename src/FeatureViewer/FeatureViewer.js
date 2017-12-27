@@ -3,11 +3,12 @@ import React, {Component} from 'react'
 import { scaleLinear } from 'd3-scale';
 import { select, event } from 'd3-selection';
 import { zoom } from 'd3-zoom';
-import { line as d3Line } from 'd3-shape';
+import { line as d3Line, curveLinear, curveStepBefore } from 'd3-shape';
 import { axisBottom, axisLeft } from 'd3-axis';
 import { scaleOrdinal, scaleBand } from 'd3-scale';
 import { format as d3Format } from 'd3-format';
 import { brushX as d3Brush } from 'd3-brush';
+import { interpolate } from 'd3-interpolate';
 
 export default class extends Component {
 
@@ -429,7 +430,7 @@ export default class extends Component {
         }
 
         let lineBond = d3Line()
-            .curve("step-before")
+            .curve(curveStepBefore)
             .x(function (d) {
                 return scaling(d.x);
             })
@@ -437,8 +438,6 @@ export default class extends Component {
                 return -d.y * 10 + pathLevel;
             });
         let lineGen = d3Line()
-
-        //          .interpolate("cardinal")
             .x(function(d) {
                 return scaling(d.x);
             })
@@ -449,7 +448,7 @@ export default class extends Component {
             .domain([0,-30])
             .range([0,-20]);
         let line = d3Line()
-            .curve("linear")
+            .curve(curveLinear)
             .x(function (d) {
                 return scaling(d.x);
             })
@@ -1498,18 +1497,17 @@ export default class extends Component {
 
         function initSVG(div, options) {
 
-            if (typeof options === 'undefined') {
-                let options = {
-                    'showAxis': false,
-                    'showSequence': false,
-                    'brushActive': false,
-                    'verticalLine': false,
-                    'toolbar': false,
-                    'bubbleHelp': false,
-                    'unit': "units",
-                    'zoomMax': 50
-                }
-            }
+            options = {
+                'showAxis': false,
+                'showSequence': false,
+                'brushActive': false,
+                'verticalLine': false,
+                'toolbar': false,
+                'bubbleHelp': false,
+                'unit': "units",
+                'zoomMax': 50,
+                ...options
+            };
 
             // Create SVG
             if (options.zoomMax) {
@@ -1521,12 +1519,8 @@ export default class extends Component {
             if (options.animation) {
                 animation = options.animation;
             }
-
             if (options.toolbar === true) {
-
-                let headerOptions = $(div + " .svgHeader").length ? select(div + " .svgHeader") : select(div).append("div").attr("class", "svgHeader");
-
-//                if (options.toolbarTemplate && options.toolbarTemplate === 2) {
+                let headerOptions = div.length ? select(div + " .svgHeader") : select(div).append("div").attr("class", "svgHeader");
 
                 if (!$(div + ' .header-position').length) {
                     let headerPosition = headerOptions
@@ -1584,89 +1578,17 @@ export default class extends Component {
                         .attr("class", "zoomUnit")
                         .text("1");
                 }
-//                }
-//                else{
-//                    if (!$(div + ' .header-zoom').length) {
-//                        let headerZoom = headerOptions
-//                            .append("div")
-//                            .attr("class", "panel panel-default header-zoom")
-//                            .style("display", "inline-block")
-//                            .style("width", "150px")
-//                            .style("margin", "20px 0px 0px")
-//                            .style("padding", "0px");
-//                        headerZoom
-//                            .append("div")
-//                            .attr("class", "panel-heading")
-//                            .style("padding", "0px 15px")
-//                            .style("border-right", "1px solid #DDD")
-//                            .style("display", "inline-block")
-//                            .style("width", "80px")
-//                            .append("h5")
-//                            .style("padding", "0px")
-//                            .style("height", "10px")
-//                            .style("color", "#777")
-//                            .text("ZOOM");
-//                        headerZoom
-//                            .append("div")
-//                            .attr("class", "panel-body")
-//                            .style("display", "inline-block")
-//                            .style("padding", "0px")
-//                            .append("h5")
-//                            .style("padding-left", "15px")
-//                            .style("height", "10px")
-//                            .text("x ")
-//                            .append("span")
-//                            .attr("class", "zoomUnit")
-//                            .text("1");
-//                    }
-//                    if (!$(div + ' .header-position').length) {
-//                        let headerPosition = headerOptions
-//                            .append("div")
-//                            .attr("class", "panel panel-default header-position")
-//                            .style("display", "inline-block")
-//                            .style("width", "175px")
-//                            .style("margin", "20px 20px 0px")
-//                            .style("padding", "0px");
-//                        headerPosition
-//                            .append("div")
-//                            .attr("class", "panel-heading")
-//                            .style("padding", "0px 15px")
-//                            .style("border-right", "1px solid #DDD")
-//                            .style("display", "inline-block")
-//                            .append("h5")
-//                            .style("padding", "0px")
-//                            .style("height", "10px")
-//                            .style("color", "#777")
-//                            .text("POSITION");
-//                        headerPosition
-//                            .append("div")
-//                            .attr("class", "panel-body")
-//                            .style("display", "inline-block")
-//                            .style("padding", "0px")
-//                            .append("h5")
-//                            .style("padding-left", "15px")
-//                            .style("height", "10px")
-//                            .append("span")
-//                            .attr("id", "zoomPosition")
-//                            .text("0");
-//                    }
-//                }
                 let headerZoom = $(div + ' .header-zoom').length ? select(div + ' .header-zoom') : headerOptions;
                 if (options.bubbleHelp === true) {
                     if (!$(div + ' .header-help').length) {
                         let helpContent = "<div><strong>To zoom in :</strong> Left click to select area of interest</div>" +
                             "<div><strong>To zoom out :</strong> Right click to reset the scale</div>" +
                             "<div><strong>Zoom max  :</strong> Limited to <strong>" + zoomMax.toString() + " " + options.unit +"</strong></div>";
-//                        let headerHelp = headerOptions
                         let headerHelp = headerZoom
                             .append("div")
-                            //                            .insert("div",":first-child")
-                            //                            .attr("class", "pull-right")
                             .style("display", "inline-block")
-                            //                            .style("margin", "15px 35px 0px 0px")
                             .style("margin", "0px")
                             .style("margin-right", "5px")
-                            //                            .style("line-height","32px")
                             .style("padding", "0px");
                         let buttonHelp = headerHelp
                             .append("a")
@@ -1677,21 +1599,13 @@ export default class extends Component {
                             .attr("title", "Help")
                             .attr("data-content", helpContent)
                             .style("font-size", "14px");
-//                            .style("margin-bottom", "2px");
                         buttonHelp
                             .append("span")
                             .attr("class", "label label-as-badge label-info")
                             .style("font-weight","500")
-                            //                            .style("border-radius","3px")
                             .style("border-radius","3px")
-                            //                            .style("background-color","#f8f8f8")
-                            //                            .style("background-color","#108D9F")
-                            //                            .style("border","1px solid #ddd")
-                            //                            .style("border","1px solid #0C6B78")
-                            //                            .style("color","#777")
                             .style("box-shadow","inset 0px 0px 4px rgba(0,0,0,0.10)")
                             .style("color","#fff")
-                            //                            .style("padding","2px 6px")
                             .html("<span class='state'>Show</span> help");
                         $(function () {
                             $('[data-toggle="popover"]').popover({html: true});
@@ -1833,8 +1747,6 @@ export default class extends Component {
 
     render() {
         return <div
-            style={{height:"1em", ...this.props.style}}
-            className={this.props.className}
             ref={node => this.node = node}
         />
     }
