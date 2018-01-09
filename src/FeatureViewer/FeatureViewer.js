@@ -1,8 +1,7 @@
 import React, {Component} from 'react'
 
 import { scaleLinear } from 'd3-scale';
-import { select, event } from 'd3-selection';
-import { zoom } from 'd3-zoom';
+import { select, event, mouse } from 'd3-selection';
 import { line as d3Line, curveLinear, curveStepBefore } from 'd3-shape';
 import { axisBottom, axisLeft } from 'd3-axis';
 import { scaleOrdinal, scaleBand } from 'd3-scale';
@@ -146,7 +145,7 @@ export default class extends Component {
                     // Clean up lost tooltips
                     select('body').selectAll('div.tooltip').remove();
                     // Append tooltip
-                    let absoluteMousePos = d3.mouse(bodyNode);
+                    let absoluteMousePos = mouse(bodyNode);
                     let rightside = (absoluteMousePos[0] > width);
                     if (rightside) {
                         tooltipDiv = select(div)
@@ -208,7 +207,7 @@ export default class extends Component {
                     .on('mousemove.tooltip', function (pD, pI) {
 
                         if (object.type === "line") {
-                            let absoluteMousePos = d3.mouse(bodyNode);
+                            let absoluteMousePos = mouse(bodyNode);
                             let elemHover = updateLineTooltip(absoluteMousePos[0],pD);
                             if (elemHover.description) {
                                 let first_line = '<p style="margin:2px;color:' + tooltipColor +'">' + elemHover.x + ' : <span> ' + elemHover.y + '</span></p>';
@@ -225,7 +224,7 @@ export default class extends Component {
                         // Move tooltip
                         // IE 11 sometimes fires mousemove before mouseover
                         if (tooltipDiv === undefined) { return; }
-                        let absoluteMousePos = d3.mouse(bodyNode);
+                        let absoluteMousePos = mouse(bodyNode);
                         let rightside = (absoluteMousePos[0] > width);
                         if (rightside) {
                             tooltipDiv.attr("class", "tooltip3");
@@ -268,7 +267,7 @@ export default class extends Component {
                             xTemp = pD[0].x;
                             yTemp = pD[1].x;
                         } else if (object.type === "line") {
-                            let absoluteMousePos = d3.mouse(bodyNode);
+                            let absoluteMousePos = mouse(bodyNode);
                             elemHover = updateLineTooltip(absoluteMousePos[0],pD);
                             xTemp = elemHover.x - 0.5;
                             yTemp = elemHover.x + 0.5;
@@ -460,26 +459,6 @@ export default class extends Component {
         let xAxis = axisBottom()
             .scale(scaling)
             .tickFormat(d3Format("d"));
-
-        // function shadeBlendConvert(p, from, to) {
-        //     if(typeof(p)!="number"||p<-1||p>1||typeof(from)!="string"||(from[0]!='r'&&from[0]!='#')||(typeof(to)!="string"&&typeof(to)!="undefined"))return null; //ErrorCheck
-        //     if(!this.sbcRip)this.sbcRip=function(d){
-        //         let l=d.length,RGB=new Object();
-        //         if(l>9){
-        //             d=d.split(",");
-        //             if(d.length<3||d.length>4)return null;//ErrorCheck
-        //             RGB[0]=i(d[0].slice(4)),RGB[1]=i(d[1]),RGB[2]=i(d[2]),RGB[3]=d[3]?parseFloat(d[3]):-1;
-        //         }else{
-        //             if(l==8||l==6||l<4)return null; //ErrorCheck
-        //             if(l<6)d="#"+d[1]+d[1]+d[2]+d[2]+d[3]+d[3]+(l>4?d[4]+""+d[4]:""); //3 digit
-        //             d=i(d.slice(1),16),RGB[0]=d>>16&255,RGB[1]=d>>8&255,RGB[2]=d&255,RGB[3]=l==9||l==5?r(((d>>24&255)/255)*10000)/10000:-1;
-        //         }
-        //         return RGB;}
-        //     let i=parseInt,r=Math.round,h=from.length>9,h=typeof(to)=="string"?to.length>9?true:to=="c"?!h:false:h,b=p<0,p=b?p*-1:p,to=to&&to!="c"?to:b?"#000000":"#FFFFFF",f=sbcRip(from),t=sbcRip(to);
-        //     if(!f||!t)return null; //ErrorCheck
-        //     if(h)return "rgb("+r((t[0]-f[0])*p+f[0])+","+r((t[1]-f[1])*p+f[1])+","+r((t[2]-f[2])*p+f[2])+(f[3]<0&&t[3]<0?")":","+(f[3]>-1&&t[3]>-1?r(((t[3]-f[3])*p+f[3])*10000)/10000:t[3]<0?f[3]:t[3])+")");
-        //     else return "#"+(0x100000000+(f[3]>-1&&t[3]>-1?r(((t[3]-f[3])*p+f[3])*255):t[3]>-1?r(t[3]*255):f[3]>-1?r(f[3]*255):255)*0x1000000+r((t[0]-f[0])*p+f[0])*0x10000+r((t[1]-f[1])*p+f[1])*0x100+r((t[2]-f[2])*p+f[2])).toString(16).slice(f[3]>-1||t[3]>-1?1:3);
-        // }
 
         function addXAxis(position) {
             svgContainer.append("g")
@@ -822,20 +801,6 @@ export default class extends Component {
                     })
                     .call(helper.tooltip(object));
 
-
-                //rectsPro.selectAll("." + object.className)
-                //    .data(object.data)
-                //    .enter()
-                //    .append("rect")
-                //    .attr("clip-path", "url(#clip)")
-                //    .attr("class", "element "+object.className)
-                //    .attr("id", function(d) { return "f"+d.id })
-                //    .attr("x", X)
-                //    .attr("width", rectWidth)
-                //    .attr("height", 12)
-                //    .style("fill", object.color)
-                //    .style("z-index", "13")
-                //    .call(helper.tooltip(object));
 
                 forcePropagation(rectsProGroup);
                 let uniqueShift = rectHeight > 12 ? rectHeight - 6 : 0;
@@ -1436,11 +1401,11 @@ export default class extends Component {
 
             select(".chart")
                 .on("mousemove.Vline", function () {
-                    mousex = d3.mouse(this)[0] - 2;
+                    mousex = mouse(this)[0] - 2;
                     vertical.style("left", mousex + "px")
                 });
             //.on("click", function(){
-            //    mousex = d3.mouse(this);
+            //    mousex = mouse(this);
             //    mousex = mousex[0] + 5;
             //    vertical.style("left", mousex + "px")});
         }
@@ -1502,7 +1467,6 @@ export default class extends Component {
                 'showSequence': false,
                 'brushActive': false,
                 'verticalLine': false,
-                'toolbar': false,
                 'bubbleHelp': false,
                 'unit': "units",
                 'zoomMax': 50,
@@ -1518,106 +1482,6 @@ export default class extends Component {
             }
             if (options.animation) {
                 animation = options.animation;
-            }
-            if (options.toolbar === true) {
-                let headerOptions = div.length ? select(div + " .svgHeader") : select(div).append("div").attr("class", "svgHeader");
-
-                if (!$(div + ' .header-position').length) {
-                    let headerPosition = headerOptions
-                        .append("div")
-                        .attr("class", "header-position")
-                        .style("display", "inline-block")
-                        .style("margin", "15px 10px 0px")
-                        .style("padding", "0px")
-                        .style("line-height","32px");
-                    headerPosition
-                        .append("div")
-                        .attr("class", "position-label")
-                        .style("padding", "0px 5px")
-                        .style("display", "inline-block")
-                        .style("padding", "0px")
-                        .style("font-weight","700")
-                        .text("Position  :  ");
-                    headerPosition
-                        .append("div")
-                        .style("display", "inline-block")
-                        .style("padding", "0px")
-                        .style("padding-left", "5px")
-                        .append("div")
-                        .style("min-width","50px")
-                        .attr("id", "zoomPosition")
-                        .text("0");
-                }
-                if (!$(div + ' .header-zoom').length) {
-                    let headerZoom = headerOptions
-                        .append("div")
-                        .attr("class", "header-zoom")
-                        .style("display", "inline-block")
-                        .style("margin", "15px 0px 0px")
-                        .style("padding", "0px")
-                        .style("line-height","32px");
-                    headerZoom
-                        .append("div")
-                        .attr("class", "zoom-label")
-                        .style("padding", "0px 5px")
-                        .style("display", "inline-block")
-                        .style("padding", "0px")
-                        .style("font-weight","700")
-                        .text("Zoom : ");
-
-                    headerZoom
-                        .append("div")
-                        .style("display", "inline-block")
-                        .style("padding", "0px")
-                        .append("div")
-                        .style("min-width","50px")
-                        .style("padding-left", "5px")
-                        .append("span")
-                        .text("x ")
-                        .append("span")
-                        .attr("class", "zoomUnit")
-                        .text("1");
-                }
-                let headerZoom = $(div + ' .header-zoom').length ? select(div + ' .header-zoom') : headerOptions;
-                if (options.bubbleHelp === true) {
-                    if (!$(div + ' .header-help').length) {
-                        let helpContent = "<div><strong>To zoom in :</strong> Left click to select area of interest</div>" +
-                            "<div><strong>To zoom out :</strong> Right click to reset the scale</div>" +
-                            "<div><strong>Zoom max  :</strong> Limited to <strong>" + zoomMax.toString() + " " + options.unit +"</strong></div>";
-                        let headerHelp = headerZoom
-                            .append("div")
-                            .style("display", "inline-block")
-                            .style("margin", "0px")
-                            .style("margin-right", "5px")
-                            .style("padding", "0px");
-                        let buttonHelp = headerHelp
-                            .append("a")
-                            .attr("type", "button")
-                            .attr("class", "header-help")
-                            .attr("data-toggle", "popover")
-                            .attr("data-placement", "auto left")
-                            .attr("title", "Help")
-                            .attr("data-content", helpContent)
-                            .style("font-size", "14px");
-                        buttonHelp
-                            .append("span")
-                            .attr("class", "label label-as-badge label-info")
-                            .style("font-weight","500")
-                            .style("border-radius","3px")
-                            .style("box-shadow","inset 0px 0px 4px rgba(0,0,0,0.10)")
-                            .style("color","#fff")
-                            .html("<span class='state'>Show</span> help");
-                        $(function () {
-                            $('[data-toggle="popover"]').popover({html: true});
-                            $(div + ' .header-help').on('hide.bs.popover', function () {
-                                $(this).find(".state").text("Show");
-                            });
-                            $(div + ' .header-help').on('show.bs.popover', function () {
-                                $(this).find(".state").text("Hide");
-                            });
-                        })
-                    }
-                }
             }
 
             svg = select(div).append("svg")
@@ -1667,12 +1531,15 @@ export default class extends Component {
                 .attr("in", "SourceGraphic");
 
             svgContainer.on('mousemove', function () {
-                let absoluteMousePos = SVGOptions.brushActive ? d3.mouse(select(".background").node()) : d3.mouse(svgContainer.node());;
+
+                let absoluteMousePos = mouse(svgContainer.node());
                 let pos = Math.round(scalingPosition(absoluteMousePos[0]));
                 if (!options.positionWithoutLetter) {
                     pos += sequence[pos-1] || "";
                 }
-                $(div + " #zoomPosition").text(pos);
+
+                // TODO: Return pos to super element via props passed function + return compound position, index, letter (120L, 120, L)
+                console.log(pos);
             });
 
             if (typeof options.dottedSequence !== "undefined"){
@@ -1730,7 +1597,7 @@ export default class extends Component {
             if (SVGOptions.verticalLine) d3.selectAll(".Vline").style("height", (Yposition + 50) + "px");
             if (selectAll(".element")[0].length > 1500) animation = false;
 
-        }
+        };
 
         this.clearInstance = function (){
             svg = null;

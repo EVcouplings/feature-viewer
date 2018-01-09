@@ -42,7 +42,6 @@ export default class extends Component {
                           showAxis: true,
                           showSequence: true,
                           brushActive: true,
-                          //toolbar:true,
                           //bubbleHelp: true,
                           zoomMax:20 }}
             />
