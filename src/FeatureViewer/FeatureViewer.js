@@ -1,4 +1,5 @@
-import React, {Component} from 'react'
+import React, {Component} from 'react';
+import PropTypes from 'prop-types';
 
 import { scaleLinear } from 'd3-scale';
 import { select, event, mouse } from 'd3-selection';
@@ -9,7 +10,7 @@ import { format as d3Format } from 'd3-format';
 import { brushX as d3Brush } from 'd3-brush';
 import { interpolate } from 'd3-interpolate';
 
-export default class extends Component {
+class FeatureViewer extends Component {
 
     constructor(props){
         super(props);
@@ -20,11 +21,9 @@ export default class extends Component {
         this.createChart();
     }
 
-
     componentDidUpdate() {
-        this.draw();
+        // this.draw();
     }
-
 
     createChart() {
 
@@ -173,27 +172,29 @@ export default class extends Component {
                         'z-index': 45,
                         'box-shadow': '0 1px 2px 0 #656565'
                     });
+                    let first_line;
+                    let second_line;
                     if (object.type === "path") {
-                        let first_line = '<p style="margin:2px;font-weight:700;color:' + tooltipColor +'">' + pD[0].x + '&#x256d;&#x256e;' + pD[1].x + '</p>';
-                        let second_line = ''
+                        first_line = '<p style="margin:2px;font-weight:700;color:' + tooltipColor +'">' + pD[0].x + '&#x256d;&#x256e;' + pD[1].x + '</p>';
+                        second_line = '';
                         if (pD.description) second_line = '<p style="margin:2px;color:' + tooltipColor +';font-size:9px">' + pD.description + '</p>';
                     } else if (object.type === "line") {
                         let elemHover = updateLineTooltip(absoluteMousePos[0],pD);
                         if (elemHover.description) {
-                            let first_line = '<p style="margin:2px;font-weight:700;color:' + tooltipColor +'">' + elemHover.x + ' : <span> ' + elemHover.y + '</span></p>';
-                            let second_line = '<p style="margin:2px;color:' + tooltipColor +';font-size:9px">' + elemHover.description + '</p>';
+                            first_line = '<p style="margin:2px;font-weight:700;color:' + tooltipColor +'">' + elemHover.x + ' : <span> ' + elemHover.y + '</span></p>';
+                            second_line = '<p style="margin:2px;color:' + tooltipColor +';font-size:9px">' + elemHover.description + '</p>';
                         }
                         else {
-                            let first_line = '<p style="margin:2px;color:' + tooltipColor +'">position : <span id="tLineX">' + elemHover.x + '</span></p>';
-                            let second_line = '<p style="margin:2px;color:' + tooltipColor +'">count : <span id="tLineC">' + elemHover.y + '</span></p>';
+                            first_line = '<p style="margin:2px;color:' + tooltipColor +'">position : <span id="tLineX">' + elemHover.x + '</span></p>';
+                            second_line = '<p style="margin:2px;color:' + tooltipColor +'">count : <span id="tLineC">' + elemHover.y + '</span></p>';
                         }
                     } else if (object.type === "unique" || pD.x === pD.y) {
-                        let first_line = '<p style="margin:2px;font-weight:700;color:' + tooltipColor +'">' + pD.x + '</p>';
-                        let second_line = '';
+                        first_line = '<p style="margin:2px;font-weight:700;color:' + tooltipColor +'">' + pD.x + '</p>';
+                        second_line = '';
                         if (pD.description) second_line = '<p style="margin:2px;color:' + tooltipColor +';font-size:9px">' + pD.description + '</p>';
                     } else {
-                        let first_line = '<p style="margin:2px;font-weight:700;color:' + tooltipColor +'">' + pD.x + ' - ' + pD.y + '</p>';
-                        let second_line = '';
+                        first_line = '<p style="margin:2px;font-weight:700;color:' + tooltipColor +'">' + pD.x + ' - ' + pD.y + '</p>';
+                        second_line = '';
                         if (pD.description) second_line = '<p style="margin:2px;color:' + tooltipColor +';font-size:9px">' + pD.description + '</p>';
                     }
 
@@ -1538,8 +1539,7 @@ export default class extends Component {
                     pos += sequence[pos-1] || "";
                 }
 
-                // TODO: Return pos to super element via props passed function + return compound position, index, letter (120L, 120, L)
-                console.log(pos);
+                self.props.onSequenceHover && self.props.onSequenceHover(pos);
             });
 
             if (typeof options.dottedSequence !== "undefined"){
@@ -1618,3 +1618,11 @@ export default class extends Component {
         />
     }
 }
+
+FeatureViewer.propTypes = {
+    sequence: PropTypes.string.isRequired,
+    options: PropTypes.object,
+    onSequenceHover: PropTypes.func,
+};
+
+export default FeatureViewer;

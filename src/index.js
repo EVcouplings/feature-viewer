@@ -18,6 +18,10 @@ export default class extends Component {
             "NLKKEGSTHSWQHITDQIGMFCFTGLKPEQVERLTKEFSIYMTKDGRISVAGVTSGNVGY" +
             "LAHAIHQVTK";
 
+        console.log(sequence);
+        console.log(sequence.length);
+
+
         return <div>
             <h2>Welcome to React components</h2>
             {/*<Sequence style={{width:"100%"}}*/}
@@ -44,6 +48,17 @@ export default class extends Component {
                           brushActive: true,
                           //bubbleHelp: true,
                           zoomMax:20 }}
+            />
+
+
+            <FeatureViewer
+                sequence={"ABCDE"}
+                options={{
+                    showAxis: true,
+                    showSequence: true,
+                    brushActive: true,
+                    //bubbleHelp: true,
+                    zoomMax:20 }}
             />
 
         </div>
