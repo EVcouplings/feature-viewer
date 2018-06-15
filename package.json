@@ -25,7 +25,7 @@
     "d3-format": "^1.2.1",
     "d3-geo": "^1.9.1",
     "d3-interpolate": "^1.1.6",
-    "d3-scale": "^1.0.7",
+    "d3-scale": "^2.0.0",
     "d3-selection": "^1.2.0",
     "d3-shape": "^1.2.0",
     "d3-svg-legend": "^2.25.3",
@@ -36,7 +36,7 @@
     "react": "16.x"
   },
   "devDependencies": {
-    "nwb": "0.20.x",
+    "nwb": "0.21.x",
     "react": "^16.2.0",
     "react-dom": "^16.2.0"
   },
