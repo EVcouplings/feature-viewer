@@ -1,80 +1,50 @@
 {
-  "name": "feature-viewer",
-  "description": "A lightweight, generic and easy-to-use feature-viewer written in javascript with D3",
-  "version": "1.0.4",
-  "homepage": "https://github.com/calipho-sib/feature-viewer",
-  "authors": [
-    "Mathieu Schaeffer <mat.schaeff@gmail.com>",
-    "Calipho Team <ndu@isb-sib.ch>"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/calipho-sib/feature-viewer.git"
-  },
-  "licenses": [
-    {
-      "type": "GNU GPL v2"
-    }
-  ],
+  "name": "c",
+  "version": "1.0.0",
+  "description": "c React component",
   "main": "lib/index.js",
+  "module": "es/index.js",
+  "files": [
+    "css",
+    "es",
+    "lib",
+    "umd"
+  ],
   "scripts": {
-    "build": "mkdir -p build && browserify -r ./:feature-viewer -o build/viewer.js",
-    "build-browser": "npm run build",
-    "build-all": "npm run build",
-    "watch": "watchify -r ./:feature-viewer -v -o build/viewer.js",
-    "w": "prunner \"npm run sniper\" \"npm run watch\"",
-    "sniper": "sniper .",
-    "dist": "grunt && grunt concating && grunt serve"
+    "build": "nwb build-react-component",
+    "clean": "nwb clean-module && nwb clean-demo",
+    "start": "nwb serve-react-demo",
+    "test": "nwb test-react",
+    "test:coverage": "nwb test-react --coverage",
+    "test:watch": "nwb test-react --server"
   },
   "dependencies": {
-    "biojs-events": "x.x.x",
-    "bootstrap": "x.x.x",
-    "bower": "x.x.x",
-    "d3": "3.5.6",
-    "grunt-cli": "x.x.x",
-    "jquery": "x.x.x",
-    "nextprot": "x.x.x"
+    "d3-array": "^1.2.1",
+    "d3-axis": "^1.0.8",
+    "d3-brush": "^1.0.4",
+    "d3-format": "^1.2.1",
+    "d3-geo": "^1.9.1",
+    "d3-interpolate": "^1.1.6",
+    "d3-scale": "^1.0.7",
+    "d3-selection": "^1.2.0",
+    "d3-shape": "^1.2.0",
+    "d3-svg-legend": "^2.25.3",
+    "d3-transition": "^1.1.1",
+    "d3-zoom": "^1.7.1"
+  },
+  "peerDependencies": {
+    "react": "16.x"
   },
   "devDependencies": {
-    "mkdirp": "^0.5.0",
-    "browserify": "6.x",
-    "sniper": "0.x",
-    "watchify": "^1.0.6",
-    "prunner": "1.x",
-    "grunt": "x.x.x",
-    "grunt-bump": "^0.3.0",
-    "grunt-connect": "^0.2.0",
-    "grunt-contrib-concat": "~0.3.0",
-    "grunt-contrib-connect": "~0.5.0",
-    "grunt-contrib-jshint": "~0.10.0",
-    "grunt-contrib-uglify": "~0.5.0",
-    "grunt-contrib-watch": "~0.5.3",
-    "grunt-serve": "^0.1.6",
-    "load-grunt-tasks": "^0.6.0"
+    "nwb": "0.20.x",
+    "react": "^16.2.0",
+    "react-dom": "^16.2.0"
   },
-  "sniper": {
-    "js": [
-      "/build/viewer.js"
-    ],
-    "css": [
-      "/css/bootstrap.css",
-      "/css/style.css"
-    ],
-    "snippets": [
-      "snippets"
-    ],
-    "first": "example_1"
-  },
+  "author": "",
+  "homepage": "",
+  "license": "MIT",
+  "repository": "",
   "keywords": [
-    "sib",
-    "isb",
-    "calipho",
-    "feature",
-    "protein",
-    "nextprot",
-    "uniprot",
-    "viewer",
-    "biojs"
-  ],
-  "readmeFilename": "README.md"
+    "react-component"
+  ]
 }
