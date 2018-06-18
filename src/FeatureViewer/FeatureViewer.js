@@ -1222,7 +1222,10 @@ class FeatureViewer extends Component {
                 if (self.trigger) self.trigger(self.events.FEATURE_DESELECTED_EVENT, {info:"feature-deselected"});
             }
             // Check if brush is big enough before zooming
-            let extent = brush.extent();
+            let extent = brush.extent;
+
+            console.log(brush);
+
             let extentLength = Math.abs(extent[0] - extent[1]);
 
             let start = parseInt(extent[1] + 1);
@@ -1233,52 +1236,7 @@ class FeatureViewer extends Component {
                 end = parseInt(extent[1] + 1);
             }
 
-            let seq = displaySequence(extentLength);
-            if (!brush.empty() && extentLength > zoomMax) {
-                current_extend.length = extentLength;
-                let zoomScale = (fvLength / extentLength).toFixed(1);
-                $(div + " .zoomUnit").text(zoomScale.toString());
-
-//                scaling.range([5,width-5]);
-                if (SVGOptions.showSequence && !(intLength) && seq && svgContainer.selectAll(".AA").empty()) {
-                    current_extend = {
-                        length : extentLength,
-                        start : start,
-                        end : end
-                    }
-                    seqShift = start;
-                    svgContainer.selectAll(".sequenceLine").remove();
-                    fillSVG.sequence(sequence.substring(start-1, end), 20, seqShift-1);
-                }
-
-                //modify scale
-//                scaling.range([5,width-5]);
-                scaling.domain(extent);
-                scalingPosition.range(extent);
-                let currentShift = seqShift ? seqShift : offset.start;
-
-
-                transition_data(features, currentShift);
-                reset_axis();
-
-                if (CustomEvent) {
-                    svgElement.dispatchEvent(new CustomEvent(
-                        self.events.ZOOM_EVENT,
-                        {detail: { start: start, end: end, zoom: zoomScale }}
-                    ));
-                }
-                if (self.trigger) self.trigger(self.events.ZOOM_EVENT, {
-                    start: start,
-                    end: end,
-                    zoom: zoomScale
-                });
-
-                //rectsPep2.classed("selected", false);
-                select(div).selectAll(".brush").call(brush.clear());
-            } else {
-                select(div).selectAll(".brush").call(brush.clear());
-                //resetAll();
-            }
+            console.log(start, end)
         }
 
         // TODO: This function get's called when resizing the window (was previously in doc.window.on(resize, f)
@@ -1293,7 +1251,7 @@ class FeatureViewer extends Component {
             if (SVGOptions.brushActive) {
                 select(div+" .background").attr("width", width);
             }
-            select(div).selectAll(".brush").call(brush.clear());
+            select(div).selectAll(".brush").call(brush.move, null);
 
 //            let currentSeqLength = svgContainer.selectAll(".AA").size();
             let seq = displaySequence(current_extend.length);
@@ -1359,7 +1317,7 @@ class FeatureViewer extends Component {
                 zoom: 1
             });
 
-            select(div).selectAll(".brush").call(brush.clear());
+            select(div).selectAll(".brush").call(brush.move, null);
         }
 
         function transition_data(features, start) {

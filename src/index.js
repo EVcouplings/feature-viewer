@@ -1,5 +1,6 @@
 import React, {Component} from 'react'
 import Sequence from './Sequence/Sequence';
+import Features from './Features/Features';
 import FeatureViewer from './FeatureViewer/FeatureViewer';
 
 export default class extends Component {
@@ -25,7 +26,7 @@ export default class extends Component {
         return <div>
             <h2>Welcome to React components</h2>
             {/*<Sequence style={{width:"100%"}}*/}
-                {/*offset={{start:3, end: 7}}*/}
+                      {/*offset={{start:3, end: 7}}*/}
                       {/*sequence={sequence} />*/}
             {/*<Sequence style={{width:"100%", height: "100%"}}*/}
                       {/*translate={this.state.updateT}*/}
@@ -40,26 +41,24 @@ export default class extends Component {
                       {/*onZoom={(t) => this.setState({updateT: t})}*/}
                       {/*sequence={sequence} />*/}
 
-            <FeatureViewer
-                      sequence={sequence}
-                      options={{
-                          showAxis: true,
-                          showSequence: true,
-                          brushActive: true,
-                          //bubbleHelp: true,
-                          zoomMax:20 }}
-            />
+            {/*<FeatureViewer*/}
+            {/*sequence={sequence}*/}
+            {/*options={{*/}
+            {/*showAxis: true,*/}
+            {/*brushActive: true,*/}
+            {/*zoomMax:20 }}*/}
+            {/*/>*/}
 
 
-            <FeatureViewer
-                sequence={"ABCDE"}
-                options={{
-                    showAxis: true,
-                    showSequence: true,
-                    brushActive: true,
-                    //bubbleHelp: true,
-                    zoomMax:20 }}
-            />
+            <Features style={{width:"100%"}}
+                      translate={this.state.updateT}
+                      onZoom={(t) => this.setState({updateT: t})}
+                      sequence={sequence} />
+            <Sequence style={{width:"100%"}}
+                      translate={this.state.updateT}
+                      onZoom={(t) => this.setState({updateT: t})}
+                      sequence={sequence} />
+
 
         </div>
     }

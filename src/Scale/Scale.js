@@ -3,6 +3,9 @@ import React, {Component} from 'react'
 import { scaleLinear } from 'd3-scale';
 import { select, event } from 'd3-selection';
 import { zoom } from 'd3-zoom';
+import { axisBottom } from 'd3-axis';
+import {format as d3Format} from "d3-format";
+
 
 export default class extends Component {
 
@@ -18,7 +21,7 @@ export default class extends Component {
     }
 
     shouldComponentUpdate(nextProps){
-        if (nextProps.translate != this.props.translate){
+        if (nextProps.translate !== this.props.translate){
             this.zoomed(nextProps.translate);
             return false;
         } else {
@@ -97,25 +100,19 @@ export default class extends Component {
     }
 
     draw(){
-        let sequence = this.props.sequence;
-        let {width, height} = this.node.getBoundingClientRect();
-
         this.g
-            .selectAll('.AA')
+            .selectAll('.xaxis')
             .remove();
 
+        let xAxis = axisBottom()
+            .scale(this.x)
+            .tickFormat(d3Format("d"));
+
         this.g
-            .selectAll(".AA")
-            .data(sequence)
-            .enter()
-            .append("text")
-            .attr("class", "AA")
+            .append("g")
+            .attr("class", "xaxis")
             .attr("transform", "translate(10, 0)")
-            .attr("x", (_, i) => this.x.range([0, width])(i))
-            .attr("y", "1em")
-            .attr("font-size", "1em")
-            .attr("font-family", "monospace")
-            .text((letter) => letter);
+            .call(xAxis);
     }
 
     render() {
