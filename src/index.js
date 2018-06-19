@@ -1,6 +1,7 @@
 import React, {Component} from 'react'
 import Sequence from './Sequence/Sequence';
 import Features from './Features/Features';
+import Scale from './Scale/Scale';
 import FeatureViewer from './FeatureViewer/FeatureViewer';
 
 export default class extends Component {
@@ -50,6 +51,10 @@ export default class extends Component {
             {/*/>*/}
 
 
+            <Scale style={{width:"100%"}}
+                      translate={this.state.updateT}
+                      onZoom={(t) => this.setState({updateT: t})}
+                      sequence={sequence} />
             <Features style={{width:"100%"}}
                       translate={this.state.updateT}
                       onZoom={(t) => this.setState({updateT: t})}
