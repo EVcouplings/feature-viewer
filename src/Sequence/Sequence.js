@@ -58,7 +58,7 @@ export default class extends Component {
 
         let offset = this.props.offset || {
             start: 0,
-            end: sequence.length || 1
+            end: sequence.length-1 || 1
         };
 
         let leftDistance = 20;
@@ -110,8 +110,8 @@ export default class extends Component {
             .enter()
             .append("text")
             .attr("class", "AA")
-            .attr("transform", "translate(10, 0)")
-            .attr("x", (_, i) => this.x.range([0, width])(i))
+            .attr("transform", "translate(5.7, 0)")
+            .attr("x", (_, i) => this.x.range([0, width-20])(i))
             .attr("y", "1em")
             .attr("font-size", "1em")
             .attr("font-family", "monospace")

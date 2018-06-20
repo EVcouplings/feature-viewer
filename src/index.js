@@ -50,7 +50,10 @@ export default class extends Component {
             {/*zoomMax:20 }}*/}
             {/*/>*/}
 
-
+            <Sequence style={{width:"100%"}}
+                      translate={this.state.updateT}
+                      onZoom={(t) => this.setState({updateT: t})}
+                      sequence={sequence} />
             <Scale style={{width:"100%"}}
                       translate={this.state.updateT}
                       onZoom={(t) => this.setState({updateT: t})}
@@ -59,10 +62,7 @@ export default class extends Component {
                       translate={this.state.updateT}
                       onZoom={(t) => this.setState({updateT: t})}
                       sequence={sequence} />
-            <Sequence style={{width:"100%"}}
-                      translate={this.state.updateT}
-                      onZoom={(t) => this.setState({updateT: t})}
-                      sequence={sequence} />
+
 
 
         </div>

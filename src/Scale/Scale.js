@@ -60,7 +60,7 @@ export default class extends Component {
         let sequence = this.props.sequence;
 
         let offset = this.props.offset || {
-            start: 0,
+            start: 1,
             end: sequence.length || 1
         };
 
